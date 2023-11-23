@@ -13,7 +13,8 @@
 	url = https://github.com/riebl/simulte.git
 [submodule "extern/vanetza"]
 	path = extern/vanetza
-	url = https://github.com/riebl/vanetza.git
+	url = https://github.com/diogopjesus/vanetza.git
+	branch = cpm
 [submodule "extern/veins"]
 	path = extern/veins
 	url = https://github.com/sommer/veins.git
