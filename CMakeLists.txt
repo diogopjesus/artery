@@ -13,7 +13,7 @@ if(POLICY CMP0079)
 endif()
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 enable_testing()
 
@@ -26,19 +26,20 @@ include(GenerateOppMessage)
 include(GNUInstallDirs)
 
 find_package(Boost 1.59 COMPONENTS date_time system REQUIRED)
-if (Boost_VERSION_STRING VERSION_GREATER_EQUAL "1.75")
-    # Boost.Geometry requires C++14 starting with Boost 1.75
-    set(CMAKE_CXX_STANDARD 14)
-endif()
+# if (Boost_VERSION_STRING VERSION_GREATER_EQUAL "1.75")
+#     # Boost.Geometry requires C++14 starting with Boost 1.75
+#     set(CMAKE_CXX_STANDARD 14)
+# endif()
 
 # running simulations with opp_run requires shared libraries
 set(BUILD_SHARED_LIBS ON CACHE INTERNAL "Cached for propagation to sub-projects with older CMake versions")
 
 check_git_submodule(PATH extern/vanetza REQUIRED_FILES CMakeLists.txt)
 set(VANETZA_INSTALL ON)
+set(VANETZA_ASN1_WITH_ITS2 ON)
 add_subdirectory(${PROJECT_SOURCE_DIR}/extern/vanetza)
 mark_as_advanced(BUILD_BENCHMARK BUILD_CERTIFY BUILD_SOCKTAP BUILD_TESTS BUILD_USING_CONAN)
-mark_as_advanced(VANETZA_ASN1_WITH_ASN1C VANETZA_EXPORT_PACKAGE VANETZA_NET_WITH_POSIX)
+mark_as_advanced(VANETZA_ASN1_WITH_ASN1C VANETZA_ASN1_WITH_ITS2 VANETZA_EXPORT_PACKAGE VANETZA_NET_WITH_POSIX)
 
 check_git_submodule(PATH extern/veins REQUIRED_FILES src/veins/package.ned)
 find_path(Veins_DIR NAMES src/veins/package.ned PATHS extern/veins DOC "Veins root directory")
