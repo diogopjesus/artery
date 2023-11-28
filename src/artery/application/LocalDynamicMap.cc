@@ -28,11 +28,11 @@ void LocalDynamicMap::updateAwareness(const CaObject& obj)
     }
 
     AwarenessEntry entry(obj, expiry);
-    auto found = mCaMessages.find(msg->header.stationID);
+    auto found = mCaMessages.find(msg->header.stationId);
     if (found != mCaMessages.end()) {
         found->second = std::move(entry);
     } else {
-        mCaMessages.emplace(msg->header.stationID, std::move(entry));
+        mCaMessages.emplace(msg->header.stationId, std::move(entry));
     }
 }
 

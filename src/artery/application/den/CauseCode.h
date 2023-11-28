@@ -36,7 +36,7 @@ enum class CauseCode
     DangerousSituation = 99
 };
 
-constexpr CauseCode convert(const CauseCodeType_t& type)
+constexpr CauseCode convert(const CauseCodeChoice_PR& type)
 {
     return static_cast<CauseCode>(type);
 }

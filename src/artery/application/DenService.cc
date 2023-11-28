@@ -84,9 +84,9 @@ void DenService::indicate(const vanetza::btp::DataIndication& indication, std::u
 {
     Asn1PacketVisitor<vanetza::asn1::Denm> visitor;
     const vanetza::asn1::Denm* denm = boost::apply_visitor(visitor, *packet);
-    const auto egoStationID = getFacilities().get_const<VehicleDataProvider>().station_id();
+    const auto egoStationId = getFacilities().get_const<VehicleDataProvider>().station_id();
 
-    if (denm && (*denm)->header.stationID != egoStationID) {
+    if (denm && (*denm)->header.stationId != egoStationId) {
         DenmObject obj = visitor.shared_wrapper;
         mMemory->received(obj);
         emit(denmReceivedSignal, &obj);
@@ -106,10 +106,10 @@ void DenService::trigger()
     }
 }
 
-ActionID_t DenService::requestActionID()
+ActionId_t DenService::requestActionID()
 {
-    ActionID_t id;
-    id.originatingStationID = getFacilities().get_const<VehicleDataProvider>().station_id();
+    ActionId_t id;
+    id.originatingStationId = getFacilities().get_const<VehicleDataProvider>().station_id();
     id.sequenceNumber = ++mSequenceNumber;
     return id;
 }

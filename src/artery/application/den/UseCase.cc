@@ -5,6 +5,15 @@
 #include <boost/units/systems/si/prefixes.hpp>
 #include <omnetpp/checkandcast.h>
 
+#define SpeedValue_oneCentimeterPerSec 1
+#define Longitude_oneMicrodegreeEast 10
+#define Latitude_oneMicrodegreeNorth 10
+#define HeadingConfidence_equalOrWithinOneDegree 10
+#define SpeedConfidence_equalOrWithinOneCentimeterPerSec 1
+#define LongitudinalAccelerationValue_pointOneMeterPerSecSquaredForward 1
+#define YawRateValue_degSec_000_01ToLeft 1
+#define PathDeltaTime_tenMilliSecondsInPast 1
+
 namespace artery
 {
 namespace den
@@ -33,13 +42,13 @@ vanetza::asn1::Denm UseCase::createMessageSkeleton()
 {
     vanetza::asn1::Denm message;
     message->header.protocolVersion = 1;
-    message->header.messageID = ItsPduHeader__messageID_denm;
-    message->header.stationID = mVdp->station_id();
+    message->header.messageId = MessageId_denm;
+    message->header.stationId = mVdp->station_id();
 
     // Do not copy ActionID itself (it also contains a context object)
     auto action_id = mService->requestActionID();
-    message->denm.management.actionID.originatingStationID = action_id.originatingStationID;
-    message->denm.management.actionID.sequenceNumber = action_id.sequenceNumber;
+    message->denm.management.actionId.originatingStationId = action_id.originatingStationId;
+    message->denm.management.actionId.sequenceNumber = action_id.sequenceNumber;
     int ret = 0;
     const auto taiTime = countTaiMilliseconds(mService->getTimer()->getTimeFor(mVdp->updated()));
     ret += asn_long2INTEGER(&message->denm.management.detectionTime, taiTime);
@@ -57,12 +66,12 @@ vanetza::asn1::Denm UseCase::createMessageSkeleton()
     message->denm.location->eventSpeed = vanetza::asn1::allocate<Speed>();
     message->denm.location->eventSpeed->speedValue = std::abs(round(mVdp->speed(), centimeter_per_second)) * SpeedValue_oneCentimeterPerSec;
     message->denm.location->eventSpeed->speedConfidence = SpeedConfidence_equalOrWithinOneCentimeterPerSec * 3;
-    message->denm.location->eventPositionHeading = vanetza::asn1::allocate<Heading>();
-    message->denm.location->eventPositionHeading->headingValue = round(mVdp->heading(), decidegree);
-    message->denm.location->eventPositionHeading->headingConfidence = HeadingConfidence_equalOrWithinOneDegree;
+    message->denm.location->eventPositionHeading = vanetza::asn1::allocate<Wgs84Angle_t>();
+    message->denm.location->eventPositionHeading->value = round(mVdp->heading(), decidegree);
+    message->denm.location->eventPositionHeading->confidence = HeadingConfidence_equalOrWithinOneDegree;
 
     // TODO fill path history
-    auto path_history = vanetza::asn1::allocate<PathHistory_t>();
+    auto path_history = vanetza::asn1::allocate<Path_t>();
     asn_sequence_add(&message->denm.location->traces, path_history);
 
     return message;

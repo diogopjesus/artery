@@ -17,6 +17,15 @@
 #include <vanetza/btp/ports.hpp>
 #include <cmath>
 
+#define SpeedValue_oneCentimeterPerSec 1
+#define Longitude_oneMicrodegreeEast 10
+#define Latitude_oneMicrodegreeNorth 10
+#define HeadingConfidence_equalOrWithinOneDegree 10
+#define SpeedConfidence_equalOrWithinOneCentimeterPerSec 1
+#define LongitudinalAccelerationValue_pointOneMeterPerSecSquaredForward 1
+#define YawRateValue_degSec_000_01ToLeft 1
+#define PathDeltaTime_tenMilliSecondsInPast 1
+
 namespace artery
 {
 
@@ -128,25 +137,25 @@ vanetza::asn1::Cam RsuCaService::createMessage() const
     vanetza::asn1::Cam message;
     ItsPduHeader_t& header = (*message).header;
     header.protocolVersion = 2;
-    header.messageID = ItsPduHeader__messageID_cam;
-    header.stationID = mIdentity->application;
+    header.messageId = MessageId_cam;
+    header.stationId = mIdentity->application;
 
-    CoopAwareness_t& cam = (*message).cam;
+    CamPayload& cam = (*message).cam;
     const uint16_t genDeltaTime = countTaiMilliseconds(mTimer->getCurrentTime());
     cam.generationDeltaTime = genDeltaTime * GenerationDeltaTime_oneMilliSec;
     BasicContainer_t& basic = cam.camParameters.basicContainer;
     HighFrequencyContainer_t& hfc = cam.camParameters.highFrequencyContainer;
 
-    basic.stationType = StationType_roadSideUnit;
+    basic.stationType = TrafficParticipantType_roadSideUnit;
     basic.referencePosition.altitude.altitudeValue = AltitudeValue_unavailable;
     basic.referencePosition.altitude.altitudeConfidence = AltitudeConfidence_unavailable;
     const double longitude = mGeoPosition->longitude / vanetza::units::degree;
     basic.referencePosition.longitude = std::round(longitude * 1e6 * Longitude_oneMicrodegreeEast);
     const double latitude = mGeoPosition->latitude / vanetza::units::degree;
     basic.referencePosition.latitude = std::round(latitude * 1e6 * Latitude_oneMicrodegreeNorth);
-    basic.referencePosition.positionConfidenceEllipse.semiMajorOrientation = HeadingValue_unavailable;
-    basic.referencePosition.positionConfidenceEllipse.semiMajorConfidence = SemiAxisLength_unavailable;
-    basic.referencePosition.positionConfidenceEllipse.semiMinorConfidence = SemiAxisLength_unavailable;
+    basic.referencePosition.positionConfidenceEllipse.semiMajorAxisOrientation = HeadingValue_unavailable;
+    basic.referencePosition.positionConfidenceEllipse.semiMajorAxisLength = SemiAxisLength_unavailable;
+    basic.referencePosition.positionConfidenceEllipse.semiMinorAxisLength = SemiAxisLength_unavailable;
 
     hfc.present = HighFrequencyContainer_PR_rsuContainerHighFrequency;
     RSUContainerHighFrequency& rchf = hfc.choice.rsuContainerHighFrequency;
@@ -162,8 +171,8 @@ vanetza::asn1::Cam RsuCaService::createMessage() const
                 *asn1->protectedZoneRadius = zone.radius_m;
             }
             if (zone.id) {
-                asn1->protectedZoneID = vanetza::asn1::allocate<ProtectedZoneID_t>();
-                *asn1->protectedZoneID = *zone.id;
+                asn1->protectedZoneId = vanetza::asn1::allocate<ProtectedZoneId_t>();
+                *asn1->protectedZoneId = *zone.id;
             }
             ASN_SEQUENCE_ADD(rchf.protectedCommunicationZonesRSU, asn1);
         }

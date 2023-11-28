@@ -21,6 +21,8 @@
 #include <algorithm>
 #include <numeric>
 
+#define SpeedValue_oneCentimeterPerSec 1
+
 static const auto hour = 3600.0 * boost::units::si::seconds;
 static const auto km_per_hour = boost::units::si::kilo * boost::units::si::meter / hour;
 
@@ -124,18 +126,18 @@ bool TrafficJamEndOfQueue::checkJamAheadReceived() const
 vanetza::asn1::Denm TrafficJamEndOfQueue::createMessage()
 {
     auto msg = createMessageSkeleton();
-    msg->denm.management.relevanceDistance = vanetza::asn1::allocate<RelevanceDistance_t>();
-    *msg->denm.management.relevanceDistance = RelevanceDistance_lessThan1000m;
-    msg->denm.management.relevanceTrafficDirection = vanetza::asn1::allocate<RelevanceTrafficDirection_t>();
-    *msg->denm.management.relevanceTrafficDirection = RelevanceTrafficDirection_upstreamTraffic;
-    msg->denm.management.validityDuration = vanetza::asn1::allocate<ValidityDuration_t>();
+    msg->denm.management.awarenessDistance = vanetza::asn1::allocate<StandardLength3b_t>();
+    *msg->denm.management.awarenessDistance = StandardLength3b_lessThan1000m;
+    msg->denm.management.awarenessTrafficDirection = vanetza::asn1::allocate<TrafficDirection_t>();
+    *msg->denm.management.awarenessTrafficDirection = TrafficDirection_sameAsReferenceDirection_upstreamOfReferencePosition;
+    msg->denm.management.validityDuration = vanetza::asn1::allocate<DeltaTimeSecond_t>();
     *msg->denm.management.validityDuration = 20;
-    msg->denm.management.stationType = StationType_unknown; // TODO retrieve type from SUMO
+    msg->denm.management.stationType = TrafficParticipantType_unknown; // TODO retrieve type from SUMO
 
     msg->denm.situation = vanetza::asn1::allocate<SituationContainer_t>();
     msg->denm.situation->informationQuality = 1;
-    msg->denm.situation->eventType.causeCode = CauseCodeType_dangerousEndOfQueue;
-    msg->denm.situation->eventType.subCauseCode = 0;
+    msg->denm.situation->eventType.ccAndScc.present = CauseCodeChoice_PR_dangerousEndOfQueue27;
+    msg->denm.situation->eventType.ccAndScc.choice.dangerousEndOfQueue27 = DangerousEndOfQueueSubCauseCode_unavailable;
 
     // TODO set road type in Location container
     // TODO set lane position in Alacarte container
@@ -288,18 +290,18 @@ bool TrafficJamAhead::checkSlowVehiclesAheadByV2X() const
 vanetza::asn1::Denm TrafficJamAhead::createMessage()
 {
     auto msg = createMessageSkeleton();
-    msg->denm.management.relevanceDistance = vanetza::asn1::allocate<RelevanceDistance_t>();
-    *msg->denm.management.relevanceDistance = RelevanceDistance_lessThan1000m;
-    msg->denm.management.relevanceTrafficDirection = vanetza::asn1::allocate<RelevanceTrafficDirection_t>();
-    *msg->denm.management.relevanceTrafficDirection = RelevanceTrafficDirection_upstreamTraffic;
-    msg->denm.management.validityDuration = vanetza::asn1::allocate<ValidityDuration_t>();
+    msg->denm.management.awarenessDistance = vanetza::asn1::allocate<StandardLength3b_t>();
+    *msg->denm.management.awarenessDistance = StandardLength3b_lessThan1000m;
+    msg->denm.management.awarenessTrafficDirection = vanetza::asn1::allocate<TrafficDirection_t>();
+    *msg->denm.management.awarenessTrafficDirection = TrafficDirection_sameAsReferenceDirection_upstreamOfReferencePosition;
+    msg->denm.management.validityDuration = vanetza::asn1::allocate<DeltaTimeSecond_t>();
     *msg->denm.management.validityDuration = 60;
-    msg->denm.management.stationType = StationType_unknown; // TODO retrieve type from SUMO
+    msg->denm.management.stationType = TrafficParticipantType_unknown; // TODO retrieve type from SUMO
 
     msg->denm.situation = vanetza::asn1::allocate<SituationContainer_t>();
     msg->denm.situation->informationQuality = 1;
-    msg->denm.situation->eventType.causeCode = CauseCodeType_trafficCondition;
-    msg->denm.situation->eventType.subCauseCode = 0;
+    msg->denm.situation->eventType.ccAndScc.present = CauseCodeChoice_PR_trafficCondition1;
+    msg->denm.situation->eventType.ccAndScc.choice.trafficCondition1 = TrafficConditionSubCauseCode_unavailable;
 
     // TODO set road type in Location container
     // TODO set lane position in Alacarte container

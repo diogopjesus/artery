@@ -32,7 +32,7 @@ class RsuCaService : public ItsG5BaseService
 
         struct ProtectedCommunicationZone
         {
-            boost::optional<ProtectedZoneID_t> id;
+            boost::optional<ProtectedZoneId_t> id;
             ProtectedZoneType_t type = ProtectedZoneType_permanentCenDsrcTolling;
             double latitude_deg = 0.0;
             double longitude_deg = 0.0;

@@ -36,7 +36,7 @@ boost::optional<den::CauseCode> DenmObject::situation_cause_code() const
     boost::optional<den::CauseCode> cause_code;
     const SituationContainer* situation = asn1()->denm.situation;
     if (situation) {
-        cause_code = den::convert(situation->eventType.causeCode);
+        cause_code = den::convert(situation->eventType.ccAndScc.present);
     }
     return cause_code;
 }
@@ -73,9 +73,9 @@ protected:
         if (auto denm = dynamic_cast<DenmObject*>(object)) {
             // 16 bit sequence number + 32 bit station id
             static_assert(sizeof(unsigned long) >= 6, "unsigned long cannot represent ActionID");
-            unsigned long action_id = denm->asn1()->denm.management.actionID.originatingStationID & 0xFFFFFFFFul;
+            unsigned long action_id = denm->asn1()->denm.management.actionId.originatingStationId & 0xFFFFFFFFul;
             action_id <<= 4;
-            action_id |= denm->asn1()->denm.management.actionID.sequenceNumber & 0xFFFFul;
+            action_id |= denm->asn1()->denm.management.actionId.sequenceNumber & 0xFFFFul;
             fire(this, t, action_id, details);
         }
     }
@@ -92,7 +92,7 @@ protected:
         if (auto denm = dynamic_cast<DenmObject*>(object)) {
             const SituationContainer_t* situation = denm->asn1()->denm.situation;
             if (situation) {
-                long causeCode = situation->eventType.causeCode;
+                long causeCode = situation->eventType.ccAndScc.present;
                 fire(this, t, causeCode, details);
             }
         }

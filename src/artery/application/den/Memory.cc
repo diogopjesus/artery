@@ -8,6 +8,8 @@
 #include "artery/application/Timer.h"
 #include <omnetpp/csimulation.h>
 
+#define DeltaTimeSecond_oneSecondAfterDetection 1
+
 using omnetpp::SimTime;
 
 namespace artery
@@ -15,8 +17,8 @@ namespace artery
 namespace den
 {
 
-ActionID::ActionID(const ActionID_t& asn1) :
-    station_id(asn1.originatingStationID),
+ActionID::ActionID(const ActionId_t& asn1) :
+    station_id(asn1.originatingStationId),
     sequence_number(asn1.sequenceNumber)
 {
 }
@@ -58,7 +60,7 @@ Reception::Reception(const DenmObject& object) :
 vanetza::Clock::time_point Reception::expiry() const
 {
     unsigned long detectionTimeRaw = 0;
-    const ManagementContainer_t& denmManagement = (*message)->denm.management;
+    const DENM_PDU_Description_ManagementContainer& denmManagement = (*message)->denm.management;
     if (asn_INTEGER2ulong(&denmManagement.detectionTime, &detectionTimeRaw) != 0) {
         throw std::range_error("DENM detectionTime cannot be converted to unsigned long");
     }
@@ -66,7 +68,7 @@ vanetza::Clock::time_point Reception::expiry() const
 
     vanetza::Clock::duration validityDuration = std::chrono::seconds(600);
     if (denmManagement.validityDuration) {
-        validityDuration = std::chrono::seconds(*denmManagement.validityDuration / ValidityDuration_oneSecondAfterDetection);
+        validityDuration = std::chrono::seconds(*denmManagement.validityDuration / DeltaTimeSecond_oneSecondAfterDetection);
     }
 
     return detectionTime + validityDuration;
@@ -74,14 +76,14 @@ vanetza::Clock::time_point Reception::expiry() const
 
 ActionID Reception::action_id() const
 {
-    return ActionID((*message)->denm.management.actionID);
+    return ActionID((*message)->denm.management.actionId);
 }
 
 CauseCode Reception::cause_code() const
 {
     const SituationContainer* situation = (*message)->denm.situation;
     if (situation) {
-        return convert(situation->eventType.causeCode);
+        return convert(situation->eventType.ccAndScc.present);
     } else {
         return static_cast<CauseCode>(0);
     }
@@ -95,14 +97,14 @@ Memory::Memory(const Timer& timer) :
 void Memory::received(const DenmObject& denm)
 {
     // TODO handle termination DENMs
-    ActionID action_id { denm.asn1()->denm.management.actionID };
+    ActionID action_id { denm.asn1()->denm.management.actionId };
     auto& idx_action_id = m_container.get<by_action_id>();
     auto found = idx_action_id.find(action_id);
     if (found == idx_action_id.end()) {
         m_container.insert(den::Reception {denm});
     } else {
-        const ManagementContainer_t& stored = (*found->message)->denm.management;
-        const ManagementContainer_t& received = denm.asn1()->denm.management;
+        const DENM_PDU_Description_ManagementContainer& stored = (*found->message)->denm.management;
+        const DENM_PDU_Description_ManagementContainer& received = denm.asn1()->denm.management;
         if (stored.referenceTime < received.referenceTime) {
             idx_action_id.replace(found, den::Reception {denm});
         }

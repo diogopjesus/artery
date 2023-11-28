@@ -56,18 +56,18 @@ void ImpactReductionContainerExchange::handleStoryboardTrigger(const StoryboardS
 vanetza::asn1::Denm ImpactReductionContainerExchange::createMessage(RequestResponseIndication_t ind)
 {
     auto msg = createMessageSkeleton();
-    msg->denm.management.relevanceDistance = vanetza::asn1::allocate<RelevanceDistance_t>();
-    *msg->denm.management.relevanceDistance = RelevanceDistance_lessThan100m;
-    msg->denm.management.relevanceTrafficDirection = vanetza::asn1::allocate<RelevanceTrafficDirection_t>();
-    *msg->denm.management.relevanceTrafficDirection = RelevanceTrafficDirection_allTrafficDirections;
-    msg->denm.management.validityDuration = vanetza::asn1::allocate<ValidityDuration_t>();
+    msg->denm.management.awarenessDistance = vanetza::asn1::allocate<StandardLength3b_t>();
+    *msg->denm.management.awarenessDistance = StandardLength3b_lessThan100m;
+    msg->denm.management.awarenessTrafficDirection = vanetza::asn1::allocate<TrafficDirection_t>();
+    *msg->denm.management.awarenessTrafficDirection = TrafficDirection_allTrafficDirections;
+    msg->denm.management.validityDuration = vanetza::asn1::allocate<DeltaTimeSecond_t>();
     *msg->denm.management.validityDuration = 2;
-    msg->denm.management.stationType = StationType_unknown; // TODO retrieve type from SUMO
+    msg->denm.management.stationType = TrafficParticipantType_unknown; // TODO retrieve type from SUMO
 
     msg->denm.situation = vanetza::asn1::allocate<SituationContainer_t>();
     msg->denm.situation->informationQuality = 1;
-    msg->denm.situation->eventType.causeCode = CauseCodeType_collisionRisk;
-    msg->denm.situation->eventType.subCauseCode = 0;
+    msg->denm.situation->eventType.ccAndScc.present = CauseCodeChoice_PR_collisionRisk97;
+    msg->denm.situation->eventType.ccAndScc.choice.collisionRisk97 = CollisionRiskSubCauseCode_unavailable;
 
     msg->denm.alacarte = vanetza::asn1::allocate<AlacarteContainer_t>();
     msg->denm.alacarte->impactReduction = vanetza::asn1::allocate<ImpactReductionContainer_t>();

@@ -27,7 +27,7 @@ namespace den
 
 struct ActionID
 {
-    ActionID(const ActionID_t&);
+    ActionID(const ActionId_t&);
 
     uint32_t station_id;
     uint16_t sequence_number;
