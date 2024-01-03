@@ -68,7 +68,7 @@ protected:
     void receiveSignal(cResultFilter* prev, simtime_t_cref t, cObject* object, cObject* details) override
     {
         if (auto cam = dynamic_cast<CaObject*>(object)) {
-            const auto id = cam->asn1()->header.stationID;
+            const auto id = cam->asn1()->header.stationId;
             fire(this, t, id, details);
         }
     }

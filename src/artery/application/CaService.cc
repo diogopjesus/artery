@@ -20,6 +20,15 @@
 #include <vanetza/facilities/cam_functions.hpp>
 #include <chrono>
 
+#define SpeedValue_oneCentimeterPerSec 1
+#define Longitude_oneMicrodegreeEast 10
+#define Latitude_oneMicrodegreeNorth 10
+#define HeadingConfidence_equalOrWithinOneDegree 10
+#define SpeedConfidence_equalOrWithinOneCentimeterPerSec 1
+#define LongitudinalAccelerationValue_pointOneMeterPerSecSquaredForward 1
+#define YawRateValue_degSec_000_01ToLeft 1
+#define PathDeltaTime_tenMilliSecondsInPast 1
+
 namespace artery
 {
 
@@ -211,23 +220,23 @@ vanetza::asn1::Cam createCooperativeAwarenessMessage(const VehicleDataProvider& 
 
 	ItsPduHeader_t& header = (*message).header;
 	header.protocolVersion = 2;
-	header.messageID = ItsPduHeader__messageID_cam;
-	header.stationID = vdp.station_id();
+	header.messageId = MessageId_cam;
+	header.stationId = vdp.station_id();
 
-	CoopAwareness_t& cam = (*message).cam;
+	CamPayload_t& cam = (*message).cam;
 	cam.generationDeltaTime = genDeltaTime * GenerationDeltaTime_oneMilliSec;
 	BasicContainer_t& basic = cam.camParameters.basicContainer;
 	HighFrequencyContainer_t& hfc = cam.camParameters.highFrequencyContainer;
 
-	basic.stationType = StationType_passengerCar;
+	basic.stationType = TrafficParticipantType_passengerCar;
 	basic.referencePosition.altitude.altitudeValue = AltitudeValue_unavailable;
 	basic.referencePosition.altitude.altitudeConfidence = AltitudeConfidence_unavailable;
 	basic.referencePosition.longitude = round(vdp.longitude(), microdegree) * Longitude_oneMicrodegreeEast;
 	basic.referencePosition.latitude = round(vdp.latitude(), microdegree) * Latitude_oneMicrodegreeNorth;
-	basic.referencePosition.positionConfidenceEllipse.semiMajorOrientation = HeadingValue_unavailable;
-	basic.referencePosition.positionConfidenceEllipse.semiMajorConfidence =
+	basic.referencePosition.positionConfidenceEllipse.semiMajorAxisOrientation = Wgs84AngleValue_unavailable;
+	basic.referencePosition.positionConfidenceEllipse.semiMajorAxisLength =
 			SemiAxisLength_unavailable;
-	basic.referencePosition.positionConfidenceEllipse.semiMinorConfidence =
+	basic.referencePosition.positionConfidenceEllipse.semiMinorAxisLength =
 			SemiAxisLength_unavailable;
 
 	hfc.present = HighFrequencyContainer_PR_basicVehicleContainerHighFrequency;
@@ -241,11 +250,11 @@ vanetza::asn1::Cam createCooperativeAwarenessMessage(const VehicleDataProvider& 
 	const double lonAccelValue = vdp.acceleration() / vanetza::units::si::meter_per_second_squared;
 	// extreme speed changes can occur when SUMO swaps vehicles between lanes (speed is swapped as well)
 	if (lonAccelValue >= -160.0 && lonAccelValue <= 161.0) {
-		bvc.longitudinalAcceleration.longitudinalAccelerationValue = lonAccelValue * LongitudinalAccelerationValue_pointOneMeterPerSecSquaredForward;
+		bvc.longitudinalAcceleration.value = lonAccelValue * LongitudinalAccelerationValue_pointOneMeterPerSecSquaredForward;
 	} else {
-		bvc.longitudinalAcceleration.longitudinalAccelerationValue = LongitudinalAccelerationValue_unavailable;
+		bvc.longitudinalAcceleration.value = AccelerationValue_unavailable;
 	}
-	bvc.longitudinalAcceleration.longitudinalAccelerationConfidence = AccelerationConfidence_unavailable;
+	bvc.longitudinalAcceleration.confidence = AccelerationConfidence_unavailable;
 	bvc.curvature.curvatureValue = abs(vdp.curvature() / vanetza::units::reciprocal_metre) * 10000.0;
 	if (bvc.curvature.curvatureValue >= 1023) {
 		bvc.curvature.curvatureValue = 1023;
