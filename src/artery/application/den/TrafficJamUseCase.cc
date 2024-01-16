@@ -284,7 +284,7 @@ bool TrafficJamAhead::checkSlowVehiclesAheadByV2X() const
 
         return result;
     };
-    return mLocalDynamicMap->count(slowVehicles) >= 5;
+    return mLocalDynamicMap->countCams(slowVehicles) >= 5;
 }
 
 vanetza::asn1::Denm TrafficJamAhead::createMessage()

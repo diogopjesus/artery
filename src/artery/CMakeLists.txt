@@ -3,6 +3,8 @@ add_library(core SHARED
     StaticNodeManager.cc
     application/CaObject.cc
     application/CaService.cc
+    # application/CpObject.cc
+    # application/CpService.cc
     application/DenmObject.cc
     application/DenService.cc
     application/ExampleService.cc
@@ -15,6 +17,7 @@ add_library(core SHARED
     application/ItsG5PromiscuousService.cc
     application/ItsG5Service.cc
     application/LocalDynamicMap.cc
+    application/DataObject.cc
     application/LocationTableLogger.cc
     application/Middleware.cc
     application/MultiChannelPolicy.cc
