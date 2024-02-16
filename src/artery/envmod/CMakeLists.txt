@@ -5,6 +5,7 @@ add_artery_feature(envmod
     LocalEnvironmentModel.cc
     sensor/BaseSensor.cc
     sensor/CamSensor.cc
+    sensor/CpmSensor.cc
     sensor/FovSensor.cc
     sensor/RadarSensor.cc
     sensor/RsuFovSensor.cc

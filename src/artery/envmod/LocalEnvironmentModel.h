@@ -22,9 +22,11 @@ namespace artery
 
 class EnvironmentModelObject;
 class GlobalEnvironmentModel;
+class LocalDynamicMap;
 class Middleware;
 class Sensor;
 class SensorDetection;
+class Timer;
 
 /**
  * Local representation of the global environment model
@@ -114,6 +116,8 @@ private:
 
     Middleware* mMiddleware;
     GlobalEnvironmentModel* mGlobalEnvironmentModel;
+    LocalDynamicMap* mLocalDynamicMap = nullptr;
+    const Timer* mTimer = nullptr;
     int mTrackingCounter = 0;
     TrackedObjects mObjects;
     std::vector<Sensor*> mSensors;

@@ -5,19 +5,34 @@
  */
 
 #include "artery/application/Middleware.h"
+#include "artery/application/LocalDynamicMap.h"
+#include "artery/application/SensorData.h"
+#include "artery/application/ObjectData.h"
+#include "artery/application/Timer.h"
 #include "artery/envmod/EnvironmentModelObject.h"
 #include "artery/envmod/LocalEnvironmentModel.h"
 #include "artery/envmod/GlobalEnvironmentModel.h"
 #include "artery/envmod/sensor/Sensor.h"
+#include "artery/envmod/sensor/FovSensor.h"
 #include "artery/utility/FilterRules.h"
 #include <inet/common/ModuleAccess.h>
 #include <omnetpp/cxmlelement.h>
+#include <boost/units/systems/si/prefixes.hpp>
 #include <utility>
 
 using namespace omnetpp;
 
 namespace artery
 {
+
+/**** static local functions *****/
+
+template<typename T, typename U>
+static long roundToUnit(const boost::units::quantity<T>& q, const U& u)
+{
+	boost::units::quantity<U> v { q };
+	return std::round(v.value());
+}
 
 Define_Module(LocalEnvironmentModel)
 
@@ -46,6 +61,24 @@ void LocalEnvironmentModel::initialize(int stage)
         fac.register_mutable(this);
     } else if (stage == 1) {
         initializeSensors();
+
+        mLocalDynamicMap = &mMiddleware->getFacilities().get_mutable<LocalDynamicMap>();
+        mTimer = &mMiddleware->getFacilities().get_const<Timer>();
+
+        // add static sensor information to LocalDynamicMap
+        for (Sensor* sensor : mSensors) {
+            if (auto fovSensor = dynamic_cast<const FovSensor*>(sensor)) {
+                std::string type = fovSensor->getSensorCategory();
+                std::string shape = "cone";
+                FieldOfView fov = fovSensor->getFieldOfView();
+                long range = roundToUnit(fov.range, vanetza::units::si::meter * boost::units::si::deci);
+                int confidence = 100;
+                bool shadowingApplies = true; // TODO: check if shadowing applies checking if line of sight is drawn
+
+                SensorData sensorData { type, shape, range, confidence, shadowingApplies };
+                mLocalDynamicMap->updateSensor(sensor->getId(), sensorData);
+            }
+        }
     }
 }
 
@@ -67,15 +100,46 @@ void LocalEnvironmentModel::receiveSignal(cComponent*, simsignal_t signal, cObje
 
 void LocalEnvironmentModel::complementObjects(const SensorDetection& detection, const Sensor& sensor)
 {
-   for (auto& detectedObject : detection.objects) {
-      auto foundObject = mObjects.find(detectedObject);
-      if (foundObject != mObjects.end()) {
-         Tracking& tracking = foundObject->second;
-         tracking.tap(&sensor);
-      } else {
-         mObjects.emplace(detectedObject, Tracking { ++mTrackingCounter, &sensor });
-      }
-   }
+    for (auto& detectedObject : detection.objects) {
+        auto foundObject = mObjects.find(detectedObject);
+        Tracking& tracking = foundObject->second;
+
+        if (foundObject != mObjects.end()) {
+            tracking.tap(&sensor);
+        } else {
+            mObjects.emplace(detectedObject, Tracking { ++mTrackingCounter, &sensor });
+        }
+    }
+
+    // update LocalDynamicMap
+    for (auto& detectedObject : detection.objects) {
+        auto foundObject = mObjects.find(detectedObject);
+        Tracking& tracking = foundObject->second;
+
+        omnetpp::SimTime firstDetection = omnetpp::SimTime::getMaxTime();
+        omnetpp::SimTime lastDetection = omnetpp::SimTime::ZERO;
+        std::vector<int> sensorIds;
+
+        for(const auto& sensor : tracking.sensors()) {
+            firstDetection = std::min(firstDetection, sensor.second.first());
+            lastDetection = std::max(lastDetection, sensor.second.last());
+            sensorIds.push_back(sensor.first->getId());
+        }
+
+        const VehicleDataProvider& vdp = detectedObject->getVehicleData();
+        Position position = detectedObject->getCentrePoint();
+        vanetza::units::Velocity speed = vdp.speed();
+        vanetza::units::Angle orientation = vdp.heading();
+        vanetza::geonet::StationType stationType = vdp.getStationType();
+        uint32_t stationId = vdp.getStationId();
+
+        int64_t taiFirstDetection = countTaiMilliseconds(mTimer->getTimeFor(firstDetection));
+        int64_t taiLastDetection = countTaiMilliseconds(mTimer->getTimeFor(lastDetection));
+
+        ObjectData objectData { firstDetection, taiFirstDetection, lastDetection, taiLastDetection, position, speed, orientation, stationType, sensorIds };
+
+        mLocalDynamicMap->updateObject(stationId, objectData);
+    }
 }
 
 void LocalEnvironmentModel::update()

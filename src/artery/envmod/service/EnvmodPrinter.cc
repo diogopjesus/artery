@@ -32,6 +32,7 @@ void EnvmodPrinter::trigger()
     EV_DETAIL << mEgoId << "--- By category ---" << std::endl;
     printSensorObjectList("Radar Sensor Object List", filterBySensorCategory(allObjects, "Radar"));
     printSensorObjectList("CAM Sensor Object List", filterBySensorCategory(allObjects, "CA"));
+    printSensorObjectList("CPM Sensor Object List", filterBySensorCategory(allObjects, "CP"));
 
     EV_DETAIL << mEgoId << "--- By name ---" << std::endl;
     for (auto &sensor: mLocalEnvironmentModel->getSensors()) {
@@ -50,6 +51,7 @@ void EnvmodPrinter::printSensorObjectList(const std::string& title, const Tracke
         if (!obj_ptr) {
             continue; /*< objects remain in tracking briefly after leaving simulation */
         }
+
         const auto& vd = obj_ptr->getVehicleData();
         EV_DETAIL
             << "station ID: " << vd.station_id()

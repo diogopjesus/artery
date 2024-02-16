@@ -11,9 +11,8 @@ namespace artery
 struct SensorData
 {
     const std::string type;
-    const Position referencePoint;
     const std::string shape;
-    const int range;
+    const long range;
     const int confidence;
     const bool shadowingApplies;
 };

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<routes>
+   <vType id="car" vClass="passenger" length="5" maxSpeed="50" speedDev="0.0" lcKeepRight="10" color="0,0.67,0"/>
+   <route id="route0" edges="hw0"/>
+   <route id="route1" edges="hw1"/>
+
+   <vehicle id="car0" type="car" route="route0" depart="0" departLane="free" departSpeed="max" />
+   <vehicle id="car1" type="car" route="route1" depart="0" departLane="free" departSpeed="max" />
+</routes>

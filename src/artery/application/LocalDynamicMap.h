@@ -96,13 +96,15 @@ public:
     unsigned countCpms(const CpmPredicate&) const;
     unsigned countSensors(const SensorPredicate&) const;
     unsigned countObjects(const ObjectPredicate&) const;
+    unsigned totalObjects() const;
     std::shared_ptr<const Cam> getCam(StationId) const;
     std::shared_ptr<const Cpm> getCpm(StationId) const;
+    std::shared_ptr<const SensorData> getSensorData(SensorId) const;
+    std::shared_ptr<const ObjectData> getObjectData(ObjectId) const;
     const AwarenessEntries& allCamEntries() const { return mCaMessages; }
     const PerceptionEntries& allCpmEntries() const { return mCpMessages; }
     const SensorEntries& allSensorEntries() const { return mSensors; }
     const ObjectEntries& allObjectEntries() const { return mObjects; }
-
 
 private:
     const Timer& mTimer;

@@ -59,7 +59,7 @@ void LocalDynamicMap::updatePerception(const CpObject& obj)
     const auto now = omnetpp::simTime();
     if (expiry < now || expiry > now + 2 * lifetime) {
         EV_STATICCONTEXT
-        EV_WARN << "Expiry of received CPM is out of bounds";
+        EV_WARN << "Expiry of received CPM is out of bounds\n";
         return;
     }
 
@@ -155,6 +155,35 @@ unsigned LocalDynamicMap::countCams(const CamPredicate& predicate) const
             });
 }
 
+unsigned LocalDynamicMap::countCpms(const CpmPredicate& predicate) const
+{
+    return std::count_if(mCpMessages.begin(), mCpMessages.end(),
+            [&predicate](const PerceptionEntries::value_type& map_entry) {
+                return predicate(map_entry.second.cpm());
+            });
+}
+
+unsigned LocalDynamicMap::countSensors(const SensorPredicate& predicate) const
+{
+    return std::count_if(mSensors.begin(), mSensors.end(),
+            [&predicate](const SensorEntries::value_type& map_entry) {
+                return predicate(map_entry.second.object());
+            });
+}
+
+unsigned LocalDynamicMap::countObjects(const ObjectPredicate& predicate) const
+{
+    return std::count_if(mObjects.begin(), mObjects.end(),
+            [&predicate](const ObjectEntries::value_type& map_entry) {
+                return predicate(map_entry.second.object());
+            });
+}
+
+unsigned LocalDynamicMap::totalObjects() const
+{
+    return mObjects.size();
+}
+
 std::shared_ptr<const LocalDynamicMap::Cam> LocalDynamicMap::getCam(StationId stationId) const
 {
     auto cam = mCaMessages.find(stationId);
@@ -170,6 +199,26 @@ std::shared_ptr<const LocalDynamicMap::Cpm> LocalDynamicMap::getCpm(StationId st
     auto cpm = mCpMessages.find(stationId);
     if (cpm != mCpMessages.end()) {
         return cpm->second.cpmPtr();
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<const SensorData> LocalDynamicMap::getSensorData(SensorId sensorId) const
+{
+    auto sensor = mSensors.find(sensorId);
+    if (sensor != mSensors.end()) {
+        return sensor->second.objectPtr();
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<const ObjectData> LocalDynamicMap::getObjectData(ObjectId objectId) const
+{
+    auto object = mObjects.find(objectId);
+    if (object != mObjects.end()) {
+        return object->second.objectPtr();
     }
 
     return nullptr;

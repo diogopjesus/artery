@@ -30,9 +30,9 @@ vanetza::Clock::time_point Timer::getTimeFor(SimTime simtime) const
 
 omnetpp::SimTime Timer::getTimeFor(vanetza::Clock::time_point tai) const
 {
-        std::chrono::microseconds diff = tai - mTimebase;
-        SimTime sim = diff.count() < 0 ? SimTime::ZERO : SimTime { diff.count(), SIMTIME_US };
-        return sim;
+    std::chrono::microseconds diff = tai - mTimebase;
+    SimTime sim = diff.count() < 0 ? SimTime::ZERO : SimTime { diff.count(), SIMTIME_US };
+    return sim;
 }
 
 vanetza::Clock::time_point Timer::reconstructMilliseconds(uint16_t ms16) const
