@@ -14,7 +14,7 @@
 [submodule "extern/vanetza"]
 	path = extern/vanetza
 	url = https://github.com/diogopjesus/vanetza.git
-	branch = cpm
+	branch = artery-cpm
 [submodule "extern/veins"]
 	path = extern/veins
 	url = https://github.com/sommer/veins.git
